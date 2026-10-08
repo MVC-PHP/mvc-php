@@ -1,0 +1,13 @@
+{
+  "name": "mvc-php/notas",
+  "description": "Sistema de calculo de notas (MVC em PHP 8)",
+  "type": "project",
+  "require": {
+    "php": "^8.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  }
+}
