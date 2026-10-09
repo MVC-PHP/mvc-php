@@ -97,6 +97,33 @@ class NotaController
         $this->redirecionar("/notas");
     }
 
+    public function list(): string
+    {
+        return $this->json($this->model->todos());
+    }
+
+    public function create(): string
+    {
+        try {
+            $nota = $this->model->criar($this->dadosApi());
+
+            return $this->json($nota, 201);
+        } catch (InvalidArgumentException $erro) {
+            return $this->json(["erro" => $erro->getMessage()], 422);
+        }
+    }
+
+    public function delete(): string
+    {
+        $id = (int) ($_GET["id"] ?? 0);
+
+        if (!$this->model->excluir($id)) {
+            return $this->json(["erro" => "Nota não encontrada."], 404);
+        }
+
+        return $this->json(["mensagem" => "Nota excluída com sucesso."]);
+    }
+
     private function buscarRegistro(string $chave, int $id): ?array
     {
         foreach ($_SESSION[$chave] ?? [] as $registro) {
@@ -114,6 +141,21 @@ class NotaController
             "tipo" => $tipo,
             "mensagem" => $texto,
         ];
+    }
+
+    private function dadosApi(): array
+    {
+        $dados = json_decode(file_get_contents("php://input"), true);
+
+        return is_array($dados) ? $dados : $_POST;
+    }
+
+    private function json(array $dados, int $status = 200): string
+    {
+        http_response_code($status);
+        header("Content-Type: application/json; charset=UTF-8");
+
+        return json_encode($dados, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
     private function redirecionar(string $rota): void

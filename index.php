@@ -59,6 +59,23 @@ if ($metodo === "POST") {
     }
 }
 
+if ($url === "/api/notas") {
+    if ($metodo === "GET") {
+        echo (new NotaController())->list();
+        exit;
+    }
+
+    if ($metodo === "POST") {
+        echo (new NotaController())->create();
+        exit;
+    }
+
+    if ($metodo === "DELETE") {
+        echo (new NotaController())->delete();
+        exit;
+    }
+}
+
 http_response_code(404);
 echo $render->render("inicio", [
     "titulo" => "Página não encontrada",
