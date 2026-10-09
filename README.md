@@ -27,15 +27,18 @@ Projeto da Avaliação II de Linguagem de Programação PHP, desenvolvido com ba
 
 ### Thiago Henrique Piovan Costa
 
-Registrar uma linha depois de cada commit realizado:
-
 - commit: 022ecb2 - Configuração da base compartilhada do projeto seguindo a Aula 8: autoload do Composer, inicialização das sessões de alunos, disciplinas e notas, roteamento inicial no index.php, layout responsivo com Bootstrap, página inicial, tratamento de rota inexistente e documentação no README.
-<<<<<<< Updated upstream
-=======
+  
+- commit: ab8e7f7 - Implementação do Model Nota com cadastro, atualização, exclusão, validações, geração automática de IDs, consultas por aluno e disciplina, cálculo de média e situação.
+
+- commit: c9260fd - Implementação do NotaController e das rotas web para listagem, cadastro, edição, salvamento e exclusão de notas.
+
+- commit: fe4e026 - Criação das telas de listagem, cadastro e edição de notas com Bootstrap, aviso quando não existem alunos ou disciplinas e exibição de mensagens da sessão.
+
+- commit: a542d0f - Implementação da API JSON de notas com as rotas GET, POST e DELETE, incluindo respostas de sucesso, validação, registro não encontrado e códigos HTTP adequados.
 
 ### Diogo Berçocano
 
 Registrar uma linha depois de cada commit realizado:
 
 - commit: HASH_DO_COMMIT - Disciplinas: Model com validação (nome de 3 a 100 caracteres e sem repetição, média mínima entre 0 e 10), busca por nome sem diferenciar maiúsculas e acentos, DisciplinaController com telas (lista com busca, criar, editar e detalhe com alunos e médias vindos das notas) e API em JSON (`/api/disciplinas`: consultar, inserir e excluir), views em Bootstrap com mensagens de sucesso e erro, bloqueio de exclusão de disciplina que já tem notas e rotas de disciplinas no index.php.
->>>>>>> Stashed changes
