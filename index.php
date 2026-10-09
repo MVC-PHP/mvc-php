@@ -142,6 +142,11 @@ if ($metodo === "GET") {
         echo (new AlunoController())->editar();
         exit;
     }
+
+    if ($url === "/alunos/detalhe") {
+        echo (new AlunoController())->detalhe();
+        exit;
+    }
 }
 
 if ($metodo === "POST") {

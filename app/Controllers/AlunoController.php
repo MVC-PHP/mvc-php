@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\Aluno;
+use App\Models\Disciplina;
 use App\Models\Nota;
 use App\Views\Render;
 use InvalidArgumentException;
@@ -51,6 +52,23 @@ class AlunoController
         ]);
     }
 
+    public function detalhe(): string
+    {
+        $id = (int) ($_GET["id"] ?? 0);
+        $aluno = $this->model->buscarPorId($id);
+
+        if ($aluno === null) {
+            $this->mensagem("danger", "Aluno não encontrado.");
+            $this->redirecionar("/alunos");
+        }
+
+        return (new Render())->render("alunos/detalhe", [
+            "titulo" => "Aluno: " . $aluno["nome"],
+            "aluno" => $aluno,
+            "disciplinas" => $this->resumoDasDisciplinas($id),
+        ]);
+    }
+
     public function salvar(): void
     {
         $id = (int) ($_POST["id"] ?? 0);
@@ -90,6 +108,33 @@ class AlunoController
         }
 
         $this->redirecionar("/alunos");
+    }
+
+    private function resumoDasDisciplinas(int $alunoId): array
+    {
+        $nota = new Nota();
+        $disciplinaModel = new Disciplina();
+        $notasPorDisciplina = [];
+
+        foreach ($nota->porAluno($alunoId) as $registro) {
+            $notasPorDisciplina[(int) $registro["disciplina_id"]][] = (float) $registro["valor"];
+        }
+
+        $linhas = [];
+
+        foreach ($notasPorDisciplina as $disciplinaId => $valores) {
+            $disciplina = $disciplinaModel->buscarPorId($disciplinaId);
+
+            $linhas[] = [
+                "nome" => $disciplina["nome"] ?? "Disciplina #$disciplinaId",
+                "media_minima" => $disciplina["media_minima"] ?? null,
+                "notas" => $valores,
+                "media" => $nota->media($alunoId, $disciplinaId),
+                "situacao" => $disciplina !== null ? $nota->situacao($alunoId, $disciplinaId) : "Sem disciplina",
+            ];
+        }
+
+        return $linhas;
     }
 
     private function temNotas(int $id): bool

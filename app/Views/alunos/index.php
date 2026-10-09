@@ -42,6 +42,12 @@
                             <td><?= htmlspecialchars($aluno["nome"]) ?></td>
                             <td class="text-end text-nowrap">
                                 <a
+                                    class="btn btn-sm btn-outline-secondary"
+                                    href="<?= $baseUrl ?>/alunos/detalhe?id=<?= (int) $aluno["id"] ?>"
+                                >
+                                    Ver
+                                </a>
+                                <a
                                     class="btn btn-sm btn-outline-primary"
                                     href="<?= $baseUrl ?>/alunos/editar?id=<?= (int) $aluno["id"] ?>"
                                 >
