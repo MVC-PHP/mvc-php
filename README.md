@@ -29,4 +29,4 @@ Projeto da Avaliação II de Linguagem de Programação PHP, desenvolvido com ba
 
 Registrar uma linha depois de cada commit realizado:
 
-- `<hash do commit>` - `<descrição objetiva do que foi feito>`
+- commit: 022ecb2 - Configuração da base compartilhada do projeto seguindo a Aula 8: autoload do Composer, inicialização das sessões de alunos, disciplinas e notas, roteamento inicial no index.php, layout responsivo com Bootstrap, página inicial, tratamento de rota inexistente e documentação no README.
