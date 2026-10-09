@@ -2,6 +2,7 @@
 
 require_once __DIR__ . "/vendor/autoload.php";
 
+use App\Controllers\AlunoController;
 use App\Controllers\DisciplinaController;
 use App\Controllers\NotaController;
 use App\Views\Render;
@@ -125,6 +126,34 @@ if ($url === "/api/disciplinas") {
         exit;
     }
 }
+
+if ($metodo === "GET") {
+    if ($url === "/alunos") {
+        echo (new AlunoController())->index();
+        exit;
+    }
+
+    if ($url === "/alunos/criar") {
+        echo (new AlunoController())->criar();
+        exit;
+    }
+
+    if ($url === "/alunos/editar") {
+        echo (new AlunoController())->editar();
+        exit;
+    }
+}
+
+if ($metodo === "POST") {
+    if ($url === "/alunos/salvar") {
+        (new AlunoController())->salvar();
+    }
+
+    if ($url === "/alunos/excluir") {
+        (new AlunoController())->excluir();
+    }
+}
+
 http_response_code(404);
 echo $render->render("inicio", [
     "titulo" => "Página não encontrada",
