@@ -1,6 +1,8 @@
 <?php
     $baseUrl = "/mvc-php";
     $tituloPagina = $titulo ?? "Sistema Acadêmico";
+    $flash = $_SESSION["flash"] ?? null;
+    unset($_SESSION["flash"]);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -49,6 +51,13 @@
     </nav>
 
     <main class="container py-4 flex-grow-1">
+        <?php if ($flash): ?>
+            <div class="alert alert-<?= htmlspecialchars($flash["tipo"]) ?> alert-dismissible fade show" role="alert">
+                <?= htmlspecialchars($flash["mensagem"]) ?>
+                <button class="btn-close" type="button" data-bs-dismiss="alert" aria-label="Fechar"></button>
+            </div>
+        <?php endif; ?>
+
         <?= $conteudo ?? '' ?>
     </main>
 
