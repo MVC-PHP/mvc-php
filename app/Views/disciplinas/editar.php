@@ -1,6 +1,3 @@
-<<<<<<< Updated upstream
-<!-- view: disciplinas/editar -->
-=======
 <?php $baseUrl = BASE_URL; ?>
 
 <div class="row justify-content-center">
@@ -18,4 +15,3 @@
         </div>
     </div>
 </div>
->>>>>>> Stashed changes

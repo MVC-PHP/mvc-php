@@ -1,19 +1,7 @@
 <?php
-<<<<<<< Updated upstream
-    namespace App\Models;
-
-    //acesso a $_SESSION["disciplinas"]
-    //campos: id, nome, media_minima
-    class Disciplina {
-        //todos, buscarPorId, criar, atualizar, excluir, validar
-    }
-?>
-=======
 
 namespace App\Models;
 
-//acesso a $_SESSION["disciplinas"]
-//campos: id, nome, media_minima
 class Disciplina
 {
     public function todos(): array
@@ -32,7 +20,6 @@ class Disciplina
         return null;
     }
 
-    //busca pelo nome ignorando maiúscula e acento ("alg" acha "Álgebra")
     public function buscarPorNome(string $termo): array
     {
         $termo = $this->simplificar($termo);
@@ -67,7 +54,6 @@ class Disciplina
             throw new \InvalidArgumentException("Disciplina não encontrada.");
         }
 
-        //passa o $id pra não acusar nome repetido dela mesma
         $erros = $this->validar($dados, $id);
 
         if ($erros) {
@@ -99,13 +85,11 @@ class Disciplina
         return count($_SESSION["disciplinas"]) < $quantidadeAnterior;
     }
 
-    //devolve a lista de erros (vazia = dados válidos)
     public function validar(array $dados, ?int $ignorarId = null): array
     {
         $erros = [];
 
         $nome = trim((string) ($dados["nome"] ?? ""));
-        //aceita vírgula ou ponto (6,5 ou 6.5)
         $mediaTexto = str_replace(",", ".", trim((string) ($dados["media_minima"] ?? "")));
 
         if ($nome === "") {
@@ -157,7 +141,6 @@ class Disciplina
         return false;
     }
 
-    //minúsculo e sem acento, pra comparar textos
     private function simplificar(string $texto): string
     {
         return strtr(mb_strtolower($texto, "UTF-8"), [
@@ -170,4 +153,3 @@ class Disciplina
         ]);
     }
 }
->>>>>>> Stashed changes

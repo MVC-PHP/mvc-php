@@ -2,10 +2,7 @@
 
 require_once __DIR__ . "/vendor/autoload.php";
 
-<<<<<<< Updated upstream
-=======
 use App\Controllers\DisciplinaController;
->>>>>>> Stashed changes
 use App\Controllers\NotaController;
 use App\Views\Render;
 
@@ -80,9 +77,6 @@ if ($url === "/api/notas") {
     }
 }
 
-<<<<<<< Updated upstream
-=======
-// ----- DISCIPLINAS (Diogo) -----
 if ($metodo === "GET") {
     if ($url === "/disciplinas") {
         echo (new DisciplinaController())->index();
@@ -105,7 +99,6 @@ if ($metodo === "GET") {
     }
 }
 
-// formulários (POST): o controller grava e redireciona
 if ($metodo === "POST") {
     if ($url === "/disciplinas/salvar") {
         (new DisciplinaController())->salvar();
@@ -116,7 +109,6 @@ if ($metodo === "POST") {
     }
 }
 
-// API em JSON
 if ($url === "/api/disciplinas") {
     if ($metodo === "GET") {
         echo (new DisciplinaController())->list();
@@ -133,8 +125,6 @@ if ($url === "/api/disciplinas") {
         exit;
     }
 }
-
->>>>>>> Stashed changes
 http_response_code(404);
 echo $render->render("inicio", [
     "titulo" => "Página não encontrada",

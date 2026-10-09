@@ -1,6 +1,3 @@
-<<<<<<< Updated upstream
-<!-- view: disciplinas/detalhe -->
-=======
 <?php $baseUrl = BASE_URL; ?>
 
 <div class="mb-3">
@@ -57,4 +54,3 @@
         </div>
     </div>
 </div>
->>>>>>> Stashed changes

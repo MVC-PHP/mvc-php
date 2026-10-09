@@ -1,17 +1,4 @@
 <?php
-<<<<<<< Updated upstream
-    namespace App\Controllers;
-
-    use App\Models\Disciplina;
-    use App\Views\Render;
-
-    class DisciplinaController {
-        //funções de views: index, criar, editar, detalhe (alunos e médias da disciplina)
-
-        //funções de APIS: list, create, delete
-    }
-?>
-=======
 
 namespace App\Controllers;
 
@@ -29,9 +16,6 @@ class DisciplinaController
         $this->model = new Disciplina();
     }
 
-    //funções de views: index, criar, editar, detalhe (alunos e médias da disciplina)
-
-    //lista com busca opcional (?q=)
     public function index(): string
     {
         $busca = trim($_GET["q"] ?? "");
@@ -47,7 +31,6 @@ class DisciplinaController
     {
         return (new Render())->render("disciplinas/criar", [
             "titulo" => "Nova disciplina",
-            //se a validação falhou, volta com o que foi digitado
             "disciplina" => $this->dadosDigitados() ?? ["nome" => "", "media_minima" => "6"],
         ]);
     }
@@ -68,7 +51,6 @@ class DisciplinaController
         ]);
     }
 
-    //mostra os alunos que têm nota na disciplina, com média e situação
     public function detalhe(): string
     {
         $id = (int) ($_GET["id"] ?? 0);
@@ -86,7 +68,6 @@ class DisciplinaController
         ]);
     }
 
-    //id vazio = cria, id preenchido = edita
     public function salvar(): void
     {
         $id = (int) ($_POST["id"] ?? 0);
@@ -129,9 +110,6 @@ class DisciplinaController
         $this->redirecionar("/disciplinas");
     }
 
-    //funções de APIS: list, create, delete
-
-    //aceita ?q= (busca) e ?id= (uma disciplina só)
     public function list(): string
     {
         if (isset($_GET["id"])) {
@@ -156,7 +134,6 @@ class DisciplinaController
         }
     }
 
-    //409 = disciplina tem notas
     public function delete(): string
     {
         $id = (int) ($_GET["id"] ?? 0);
@@ -174,7 +151,6 @@ class DisciplinaController
         return $this->json(["mensagem" => "Disciplina excluída com sucesso."]);
     }
 
-    //uma linha por aluno; média e situação vêm do model Nota
     private function resumoDosAlunos(array $disciplina): array
     {
         $nota = new Nota();
@@ -212,7 +188,6 @@ class DisciplinaController
         return null;
     }
 
-    //lê e apaga da sessão o que foi digitado num formulário com erro
     private function dadosDigitados(): ?array
     {
         $dados = $_SESSION["disciplina_digitada"] ?? null;
@@ -250,4 +225,3 @@ class DisciplinaController
         exit;
     }
 }
->>>>>>> Stashed changes
