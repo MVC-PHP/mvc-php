@@ -2,6 +2,10 @@
 
 require_once __DIR__ . "/vendor/autoload.php";
 
+<<<<<<< Updated upstream
+=======
+use App\Controllers\DisciplinaController;
+>>>>>>> Stashed changes
 use App\Controllers\NotaController;
 use App\Views\Render;
 
@@ -76,6 +80,61 @@ if ($url === "/api/notas") {
     }
 }
 
+<<<<<<< Updated upstream
+=======
+// ----- DISCIPLINAS (Diogo) -----
+if ($metodo === "GET") {
+    if ($url === "/disciplinas") {
+        echo (new DisciplinaController())->index();
+        exit;
+    }
+
+    if ($url === "/disciplinas/criar") {
+        echo (new DisciplinaController())->criar();
+        exit;
+    }
+
+    if ($url === "/disciplinas/editar") {
+        echo (new DisciplinaController())->editar();
+        exit;
+    }
+
+    if ($url === "/disciplinas/detalhe") {
+        echo (new DisciplinaController())->detalhe();
+        exit;
+    }
+}
+
+// formulários (POST): o controller grava e redireciona
+if ($metodo === "POST") {
+    if ($url === "/disciplinas/salvar") {
+        (new DisciplinaController())->salvar();
+    }
+
+    if ($url === "/disciplinas/excluir") {
+        (new DisciplinaController())->excluir();
+    }
+}
+
+// API em JSON
+if ($url === "/api/disciplinas") {
+    if ($metodo === "GET") {
+        echo (new DisciplinaController())->list();
+        exit;
+    }
+
+    if ($metodo === "POST") {
+        echo (new DisciplinaController())->create();
+        exit;
+    }
+
+    if ($metodo === "DELETE") {
+        echo (new DisciplinaController())->delete();
+        exit;
+    }
+}
+
+>>>>>>> Stashed changes
 http_response_code(404);
 echo $render->render("inicio", [
     "titulo" => "Página não encontrada",
