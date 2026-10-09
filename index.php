@@ -159,6 +159,23 @@ if ($metodo === "POST") {
     }
 }
 
+if ($url === "/api/alunos") {
+    if ($metodo === "GET") {
+        echo (new AlunoController())->list();
+        exit;
+    }
+
+    if ($metodo === "POST") {
+        echo (new AlunoController())->create();
+        exit;
+    }
+
+    if ($metodo === "DELETE") {
+        echo (new AlunoController())->delete();
+        exit;
+    }
+}
+
 http_response_code(404);
 echo $render->render("inicio", [
     "titulo" => "Página não encontrada",

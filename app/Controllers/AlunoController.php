@@ -110,6 +110,47 @@ class AlunoController
         $this->redirecionar("/alunos");
     }
 
+    public function list(): string
+    {
+        if (isset($_GET["id"])) {
+            $aluno = $this->model->buscarPorId((int) $_GET["id"]);
+
+            return $aluno === null
+                ? $this->json(["erro" => "Aluno não encontrado."], 404)
+                : $this->json($aluno);
+        }
+
+        $busca = trim($_GET["q"] ?? "");
+
+        return $this->json($busca !== "" ? $this->model->buscarPorNome($busca) : $this->model->todos());
+    }
+
+    public function create(): string
+    {
+        try {
+            return $this->json($this->model->criar($this->dadosApi()), 201);
+        } catch (InvalidArgumentException $erro) {
+            return $this->json(["erro" => $erro->getMessage()], 422);
+        }
+    }
+
+    public function delete(): string
+    {
+        $id = (int) ($_GET["id"] ?? 0);
+
+        if ($this->model->buscarPorId($id) === null) {
+            return $this->json(["erro" => "Aluno não encontrado."], 404);
+        }
+
+        if ($this->temNotas($id)) {
+            return $this->json(["erro" => "O aluno já tem notas lançadas."], 409);
+        }
+
+        $this->model->excluir($id);
+
+        return $this->json(["mensagem" => "Aluno excluído com sucesso."]);
+    }
+
     private function resumoDasDisciplinas(int $alunoId): array
     {
         $nota = new Nota();
@@ -156,6 +197,21 @@ class AlunoController
             "tipo" => $tipo,
             "mensagem" => $texto,
         ];
+    }
+
+    private function dadosApi(): array
+    {
+        $dados = json_decode(file_get_contents("php://input"), true);
+
+        return is_array($dados) ? $dados : $_POST;
+    }
+
+    private function json(array $dados, int $status = 200): string
+    {
+        http_response_code($status);
+        header("Content-Type: application/json; charset=UTF-8");
+
+        return json_encode($dados, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
     }
 
     private function redirecionar(string $rota): void
