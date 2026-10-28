@@ -3,8 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\Aluno;
-use App\Models\Disciplina;
-use App\Models\Nota;
 use App\Views\Render;
 use InvalidArgumentException;
 
@@ -65,7 +63,7 @@ class AlunoController
         return (new Render())->render("alunos/detalhe", [
             "titulo" => "Aluno: " . $aluno["nome"],
             "aluno" => $aluno,
-            "disciplinas" => $this->resumoDasDisciplinas($id),
+            "disciplinas" => $this->model->disciplinasComMedia((int) $aluno["id"]),
         ]);
     }
 
@@ -134,6 +132,21 @@ class AlunoController
         }
     }
 
+    public function update(): string
+    {
+        $id = (int) ($_GET["id"] ?? 0);
+
+        if ($this->model->buscarPorId($id) === null) {
+            return $this->json(["erro" => "Aluno não encontrado."], 404);
+        }
+
+        try {
+            return $this->json($this->model->atualizar($id, $this->dadosApi()));
+        } catch (InvalidArgumentException $erro) {
+            return $this->json(["erro" => $erro->getMessage()], 422);
+        }
+    }
+
     public function delete(): string
     {
         $id = (int) ($_GET["id"] ?? 0);
@@ -151,36 +164,9 @@ class AlunoController
         return $this->json(["mensagem" => "Aluno excluído com sucesso."]);
     }
 
-    private function resumoDasDisciplinas(int $alunoId): array
-    {
-        $nota = new Nota();
-        $disciplinaModel = new Disciplina();
-        $notasPorDisciplina = [];
-
-        foreach ($nota->porAluno($alunoId) as $registro) {
-            $notasPorDisciplina[(int) $registro["disciplina_id"]][] = (float) $registro["valor"];
-        }
-
-        $linhas = [];
-
-        foreach ($notasPorDisciplina as $disciplinaId => $valores) {
-            $disciplina = $disciplinaModel->buscarPorId($disciplinaId);
-
-            $linhas[] = [
-                "nome" => $disciplina["nome"] ?? "Disciplina #$disciplinaId",
-                "media_minima" => $disciplina["media_minima"] ?? null,
-                "notas" => $valores,
-                "media" => $nota->media($alunoId, $disciplinaId),
-                "situacao" => $disciplina !== null ? $nota->situacao($alunoId, $disciplinaId) : "Sem disciplina",
-            ];
-        }
-
-        return $linhas;
-    }
-
     private function temNotas(int $id): bool
     {
-        return (new Nota())->porAluno($id) !== [];
+        return $this->model->temNotas($id);
     }
 
     private function dadosDigitados(): ?array

@@ -1,6 +1,6 @@
 # Sistema Acadêmico MVC em PHP
 
-Projeto da Avaliação II de Linguagem de Programação PHP, desenvolvido com base na estrutura MVC apresentada na Aula 8.
+Projeto das Avaliações II e III de Linguagem de Programação PHP, feito em cima da estrutura MVC que vimos na Aula 8. Na Avaliação II tudo ficava salvo na sessão; na III a gente passou tudo pro MySQL usando PDO, sem mexer nas rotas nem nas telas.
 
 ## Integrantes e responsabilidades
 
@@ -14,19 +14,20 @@ Projeto da Avaliação II de Linguagem de Programação PHP, desenvolvido com ba
 - `app/Views/Render.php`: carrega a view solicitada e a insere no layout.
 - `app/Views/layout.php`: estrutura visual comum feita com Bootstrap.
 - `composer.json`: configura o autoload PSR-4 das classes em `app/`.
-- `$_SESSION["alunos"]`: armazenamento temporário do módulo de alunos, ainda não migrado.
-- MySQL/PDO: armazenamento dos módulos de notas e disciplinas.
+- `app/Config/Database.php`: abre a conexão PDO com o MySQL, uma vez só por requisição.
+- `schema.sql`: cria as tabelas `alunos`, `disciplinas` e `notas`, com as chaves estrangeiras.
+- MySQL/PDO: onde ficam os dados dos três módulos. A sessão agora só guarda as mensagens de aviso e o que foi digitado num formulário que deu erro.
 
 ## Como executar
 
 1. Coloque o projeto na pasta `htdocs/mvc-php` do XAMPP.
 2. Na raiz do projeto, execute `composer install`.
-3. Inicie o Apache no XAMPP.
+3. Inicie o Apache e o MySQL no XAMPP e crie o banco seguindo a seção "Instalação no XAMPP" logo abaixo.
 4. Acesse `http://localhost/mvc-php/`.
 
-## Avaliação III: módulo de notas com PDO
+## Avaliação III: tudo no MySQL com PDO
 
-Esta branch migra **somente o módulo de notas** para MySQL/PDO e fornece a infraestrutura compartilhada da Avaliação III. Os Models e Controllers de Aluno e Disciplina continuam usando `$_SESSION` até que os respectivos integrantes concluam suas migrações; por isso, o trabalho completo da Avaliação III ainda não está concluído.
+Agora os três módulos (alunos, disciplinas e notas) salvam e leem os dados direto do MySQL. Cada um fez a migração da sua parte usando a mesma conexão compartilhada, e as rotas, os controllers e as telas continuaram funcionando do mesmo jeito.
 
 ### Requisitos
 
@@ -64,9 +65,9 @@ use App\Config\Database;
 $pdo = Database::getConnection();
 ```
 
-Guilherme e Diogo devem reutilizar essa classe em seus Models e Controllers, sem criar uma segunda conexão. Enquanto os módulos deles ainda estiverem em sessão, alunos e disciplinas usados nas notas precisam ser cadastrados diretamente nas tabelas `alunos` e `disciplinas` para os testes do módulo.
+Os três Models usam essa mesma classe, então ninguém abre uma segunda conexão.
 
-### Funcionalidades migradas
+### Módulo de notas com PDO
 
 - CRUD de notas em MySQL com prepared statements e IDs `AUTO_INCREMENT`.
 - Validação de aluno, disciplina e intervalo da nota no Model e no banco.
@@ -82,13 +83,15 @@ Guilherme e Diogo devem reutilizar essa classe em seus Models e Controllers, sem
 - A exclusão de disciplina com notas é bloqueada no controller e também pela chave estrangeira `fk_notas_disciplina` (`ON DELETE RESTRICT`).
 - API `/api/disciplinas`: `GET` (todas, `?id=` ou `?q=`), `POST`, `PUT ?id=` e `DELETE ?id=`.
 
-Exemplo de uso da API:
 
-```powershell
-curl -X POST http://localhost/mvc-php/api/disciplinas -H "Content-Type: application/json" -d "{\"nome\":\"Banco de Dados\",\"media_minima\":6}"
-curl -X PUT "http://localhost/mvc-php/api/disciplinas?id=1" -H "Content-Type: application/json" -d "{\"nome\":\"Banco de Dados I\",\"media_minima\":7}"
-curl -X DELETE "http://localhost/mvc-php/api/disciplinas?id=1"
-```
+### Módulo de alunos com PDO
+
+- O `app/Models/Aluno.php` saiu da sessão e agora conversa com a tabela `alunos` pelo `Database::getConnection()`, sempre com prepared statements. Dá pra listar, buscar por ID, buscar por nome, cadastrar, editar e excluir.
+- As regras continuam as mesmas: o nome é obrigatório, tem que ter de 3 a 100 caracteres e não pode repetir. "Maria Souza" e "maria souza" contam como o mesmo nome, e a busca acha "João" mesmo se você digitar "joao".
+- Relação com as notas: o `disciplinasComMedia()` junta `notas` e `disciplinas` com `JOIN`, calcula a média no próprio banco com `AVG` e devolve a situação (Aprovado/Reprovado). É isso que aparece na tela de detalhe do aluno.
+- Não dá pra excluir aluno que já tem nota: o controller avisa antes, e se mesmo assim chegar no banco, a chave estrangeira `fk_notas_aluno` (`ON DELETE RESTRICT`) barra.
+- API `/api/alunos`: `GET` (todos, `?id=` ou `?q=`), `POST`, `PUT ?id=` e `DELETE ?id=`.
+
 
 ### Testes
 
@@ -101,6 +104,7 @@ composer test
 C:\xampp\php\php.exe tests\NotaModelTest.php
 C:\xampp\php\php.exe tests\NotaControllerTest.php
 C:\xampp\php\php.exe tests\DisciplinaModelTest.php
+C:\xampp\php\php.exe tests\AlunoModelTest.php
 ```
 
 Para o teste de integração, importe primeiro o schema em um banco de teste ou desenvolvimento, configure a conexão e confirme explicitamente a execução:
@@ -134,7 +138,7 @@ Registrar uma linha depois de cada commit realizado:
 
 - commit: 95136d76c19d030b7acde388aaebd27d090d54b9 - Disciplinas: Model com validação (nome de 3 a 100 caracteres e sem repetição, média mínima entre 0 e 10), busca por nome sem diferenciar maiúsculas e acentos, DisciplinaController com telas (lista com busca, criar, editar e detalhe com alunos e médias vindos das notas) e API em JSON (`/api/disciplinas`: consultar, inserir e excluir), views em Bootstrap com mensagens de sucesso e erro, bloqueio de exclusão de disciplina que já tem notas e rotas de disciplinas no index.php.
 
-- commit: 5a139f7 - Avaliação III - Disciplinas: migração do Model Disciplina de `$_SESSION` para MySQL/PDO usando a conexão compartilhada `Database`, consulta com `JOIN` e `AVG` para alunos e médias da disciplina, rota `PUT /api/disciplinas` para completar o CRUD na API, remoção da sessão de disciplinas do `index.php` e testes em `tests/DisciplinaModelTest.php`.
+- commit: 5a139f7 - Persistência com MySQL e PDO: migração do Model Disciplina de `$_SESSION` para MySQL/PDO usando a conexão compartilhada `Database`, consulta com `JOIN` e `AVG` para alunos e médias da disciplina, rota `PUT /api/disciplinas` para completar o CRUD na API, remoção da sessão de disciplinas do `index.php` e testes em `tests/DisciplinaModelTest.php`.
 
 ### Guilherme Canducci
 
@@ -154,3 +158,6 @@ Commits em MVC-Alunos.
 
 - 9b516ba commit: Implementação da API JSON de alunos na rota /api/alunos.
   Consulta (todos, por ID ou por nome), inserção e exclusão, com respostas de sucesso, erro de validação, registro não encontrado, bloqueio de exclusão de aluno com notas e códigos HTTP adequados.
+
+- 256ea62 commit: Persistência com MySQL e PDO: migração do Model Aluno da sessão para MySQL/PDO.
+  O Model passou a usar a conexão compartilhada `Database`, com consulta `JOIN` + `AVG` para mostrar as disciplinas, notas e médias do aluno na tela de detalhe. Também entrou a rota `PUT /api/alunos` pra fechar o CRUD na API, saiu a sessão de alunos do `index.php` e foram criados os testes em `tests/AlunoModelTest.php`.
