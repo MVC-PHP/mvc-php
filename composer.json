@@ -9,5 +9,12 @@
     "psr-4": {
       "App\\": "app/"
     }
+  },
+  "scripts": {
+    "test": [
+      "php tests/NotaModelTest.php",
+      "php tests/NotaControllerTest.php"
+    ],
+    "test:mysql": "php tests/NotaMysqlTest.php"
   }
 }
