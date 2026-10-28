@@ -159,5 +159,5 @@ Commits em MVC-Alunos.
 - 9b516ba commit: Implementação da API JSON de alunos na rota /api/alunos.
   Consulta (todos, por ID ou por nome), inserção e exclusão, com respostas de sucesso, erro de validação, registro não encontrado, bloqueio de exclusão de aluno com notas e códigos HTTP adequados.
 
-- HASH_PENDENTE commit: Persistência com MySQL e PDO: migração do Model Aluno da sessão para MySQL/PDO.
+- 256ea62 commit: Persistência com MySQL e PDO: migração do Model Aluno da sessão para MySQL/PDO.
   O Model passou a usar a conexão compartilhada `Database`, com consulta `JOIN` + `AVG` para mostrar as disciplinas, notas e médias do aluno na tela de detalhe. Também entrou a rota `PUT /api/alunos` pra fechar o CRUD na API, saiu a sessão de alunos do `index.php` e foram criados os testes em `tests/AlunoModelTest.php`.
