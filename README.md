@@ -134,7 +134,7 @@ Registrar uma linha depois de cada commit realizado:
 
 - commit: 95136d76c19d030b7acde388aaebd27d090d54b9 - Disciplinas: Model com validação (nome de 3 a 100 caracteres e sem repetição, média mínima entre 0 e 10), busca por nome sem diferenciar maiúsculas e acentos, DisciplinaController com telas (lista com busca, criar, editar e detalhe com alunos e médias vindos das notas) e API em JSON (`/api/disciplinas`: consultar, inserir e excluir), views em Bootstrap com mensagens de sucesso e erro, bloqueio de exclusão de disciplina que já tem notas e rotas de disciplinas no index.php.
 
-- Avaliação III - Disciplinas: migração do Model Disciplina de `$_SESSION` para MySQL/PDO usando a conexão compartilhada `Database`, consulta com `JOIN` e `AVG` para alunos e médias da disciplina, rota `PUT /api/disciplinas` para completar o CRUD na API, remoção da sessão de disciplinas do `index.php` e testes em `tests/DisciplinaModelTest.php`.
+- commit: 5a139f7 - Avaliação III - Disciplinas: migração do Model Disciplina de `$_SESSION` para MySQL/PDO usando a conexão compartilhada `Database`, consulta com `JOIN` e `AVG` para alunos e médias da disciplina, rota `PUT /api/disciplinas` para completar o CRUD na API, remoção da sessão de disciplinas do `index.php` e testes em `tests/DisciplinaModelTest.php`.
 
 ### Guilherme Canducci
 
