@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Models\Disciplina;
-use App\Models\Nota;
 use App\Views\Render;
 use InvalidArgumentException;
 
@@ -64,7 +63,7 @@ class DisciplinaController
         return (new Render())->render("disciplinas/detalhe", [
             "titulo" => "Disciplina: " . $disciplina["nome"],
             "disciplina" => $disciplina,
-            "alunos" => $this->resumoDosAlunos($disciplina),
+            "alunos" => $this->model->alunosComMedia((int) $disciplina["id"]),
         ]);
     }
 
@@ -134,6 +133,21 @@ class DisciplinaController
         }
     }
 
+    public function update(): string
+    {
+        $id = (int) ($_GET["id"] ?? 0);
+
+        if ($this->model->buscarPorId($id) === null) {
+            return $this->json(["erro" => "Disciplina não encontrada."], 404);
+        }
+
+        try {
+            return $this->json($this->model->atualizar($id, $this->dadosApi()));
+        } catch (InvalidArgumentException $erro) {
+            return $this->json(["erro" => $erro->getMessage()], 422);
+        }
+    }
+
     public function delete(): string
     {
         $id = (int) ($_GET["id"] ?? 0);
@@ -151,41 +165,9 @@ class DisciplinaController
         return $this->json(["mensagem" => "Disciplina excluída com sucesso."]);
     }
 
-    private function resumoDosAlunos(array $disciplina): array
-    {
-        $nota = new Nota();
-        $idDisciplina = (int) $disciplina["id"];
-        $linhas = [];
-
-        $alunosIds = array_unique(array_column($nota->porDisciplina($idDisciplina), "aluno_id"));
-
-        foreach ($alunosIds as $alunoId) {
-            $aluno = $this->buscarRegistro("alunos", (int) $alunoId);
-
-            $linhas[] = [
-                "nome" => $aluno["nome"] ?? "Aluno #$alunoId",
-                "media" => $nota->media((int) $alunoId, $idDisciplina),
-                "situacao" => $nota->situacao((int) $alunoId, $idDisciplina),
-            ];
-        }
-
-        return $linhas;
-    }
-
     private function temNotas(int $id): bool
     {
-        return (new Nota())->porDisciplina($id) !== [];
-    }
-
-    private function buscarRegistro(string $chave, int $id): ?array
-    {
-        foreach ($_SESSION[$chave] ?? [] as $registro) {
-            if ((int) $registro["id"] === $id) {
-                return $registro;
-            }
-        }
-
-        return null;
+        return $this->model->temNotas($id);
     }
 
     private function dadosDigitados(): ?array

@@ -14,8 +14,8 @@ Projeto da Avaliação II de Linguagem de Programação PHP, desenvolvido com ba
 - `app/Views/Render.php`: carrega a view solicitada e a insere no layout.
 - `app/Views/layout.php`: estrutura visual comum feita com Bootstrap.
 - `composer.json`: configura o autoload PSR-4 das classes em `app/`.
-- `$_SESSION["alunos"]` e `$_SESSION["disciplinas"]`: armazenamento temporário dos módulos ainda não migrados na branch de integração.
-- MySQL/PDO: armazenamento do módulo de notas nesta branch.
+- `$_SESSION["alunos"]`: armazenamento temporário do módulo de alunos, ainda não migrado.
+- MySQL/PDO: armazenamento dos módulos de notas e disciplinas.
 
 ## Como executar
 
@@ -74,6 +74,22 @@ Guilherme e Diogo devem reutilizar essa classe em seus Models e Controllers, sem
 - Formulários, listagem e API JSON de notas usando PDO.
 - Chaves estrangeiras com exclusão restrita para preservar notas relacionadas.
 
+### Módulo de disciplinas com PDO
+
+- `app/Models/Disciplina.php` usa `Database::getConnection()` com prepared statements para listar, buscar por ID, buscar por nome (sem diferenciar maiúsculas e acentos), cadastrar, atualizar e excluir.
+- As validações continuam no Model: nome de 3 a 100 caracteres sem repetição e média mínima entre 0 e 10.
+- Relacionamento com notas: `alunosComMedia()` faz `JOIN` entre `notas`, `alunos` e `disciplinas` e calcula a média com `AVG` no banco, usado na tela de detalhe da disciplina.
+- A exclusão de disciplina com notas é bloqueada no controller e também pela chave estrangeira `fk_notas_disciplina` (`ON DELETE RESTRICT`).
+- API `/api/disciplinas`: `GET` (todas, `?id=` ou `?q=`), `POST`, `PUT ?id=` e `DELETE ?id=`.
+
+Exemplo de uso da API:
+
+```powershell
+curl -X POST http://localhost/mvc-php/api/disciplinas -H "Content-Type: application/json" -d "{\"nome\":\"Banco de Dados\",\"media_minima\":6}"
+curl -X PUT "http://localhost/mvc-php/api/disciplinas?id=1" -H "Content-Type: application/json" -d "{\"nome\":\"Banco de Dados I\",\"media_minima\":7}"
+curl -X DELETE "http://localhost/mvc-php/api/disciplinas?id=1"
+```
+
 ### Testes
 
 Os testes de lógica e do controller usam SQLite em memória e não alteram o banco do XAMPP:
@@ -84,6 +100,7 @@ composer test
 # Alternativa sem o comando Composer disponível no PATH:
 C:\xampp\php\php.exe tests\NotaModelTest.php
 C:\xampp\php\php.exe tests\NotaControllerTest.php
+C:\xampp\php\php.exe tests\DisciplinaModelTest.php
 ```
 
 Para o teste de integração, importe primeiro o schema em um banco de teste ou desenvolvimento, configure a conexão e confirme explicitamente a execução:
@@ -116,6 +133,8 @@ O teste MySQL abre uma transação, cria dados fictícios, verifica CRUD, média
 Registrar uma linha depois de cada commit realizado:
 
 - commit: 95136d76c19d030b7acde388aaebd27d090d54b9 - Disciplinas: Model com validação (nome de 3 a 100 caracteres e sem repetição, média mínima entre 0 e 10), busca por nome sem diferenciar maiúsculas e acentos, DisciplinaController com telas (lista com busca, criar, editar e detalhe com alunos e médias vindos das notas) e API em JSON (`/api/disciplinas`: consultar, inserir e excluir), views em Bootstrap com mensagens de sucesso e erro, bloqueio de exclusão de disciplina que já tem notas e rotas de disciplinas no index.php.
+
+- Avaliação III - Disciplinas: migração do Model Disciplina de `$_SESSION` para MySQL/PDO usando a conexão compartilhada `Database`, consulta com `JOIN` e `AVG` para alunos e médias da disciplina, rota `PUT /api/disciplinas` para completar o CRUD na API, remoção da sessão de disciplinas do `index.php` e testes em `tests/DisciplinaModelTest.php`.
 
 ### Guilherme Canducci
 
