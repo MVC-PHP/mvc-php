@@ -9,8 +9,6 @@ use App\Views\Render;
 
 session_start();
 
-$_SESSION["alunos"] ??= [];
-
 $basedir = "/mvc-php";
 define("BASE_URL", $basedir);
 
@@ -169,6 +167,11 @@ if ($url === "/api/alunos") {
 
     if ($metodo === "POST") {
         echo (new AlunoController())->create();
+        exit;
+    }
+
+    if ($metodo === "PUT") {
+        echo (new AlunoController())->update();
         exit;
     }
 

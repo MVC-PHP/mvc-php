@@ -14,7 +14,8 @@
     "test": [
       "php tests/NotaModelTest.php",
       "php tests/NotaControllerTest.php",
-      "php tests/DisciplinaModelTest.php"
+      "php tests/DisciplinaModelTest.php",
+      "php tests/AlunoModelTest.php"
     ],
     "test:mysql": "php tests/NotaMysqlTest.php"
   }
