@@ -14,7 +14,8 @@ Projeto da Avaliação II de Linguagem de Programação PHP, desenvolvido com ba
 - `app/Views/Render.php`: carrega a view solicitada e a insere no layout.
 - `app/Views/layout.php`: estrutura visual comum feita com Bootstrap.
 - `composer.json`: configura o autoload PSR-4 das classes em `app/`.
-- `$_SESSION["alunos"]`, `$_SESSION["disciplinas"]` e `$_SESSION["notas"]`: dados usados pela aplicacao.
+- `$_SESSION["alunos"]` e `$_SESSION["disciplinas"]`: armazenamento temporário dos módulos ainda não migrados na branch de integração.
+- MySQL/PDO: armazenamento do módulo de notas nesta branch.
 
 ## Como executar
 
@@ -22,6 +23,79 @@ Projeto da Avaliação II de Linguagem de Programação PHP, desenvolvido com ba
 2. Na raiz do projeto, execute `composer install`.
 3. Inicie o Apache no XAMPP.
 4. Acesse `http://localhost/mvc-php/`.
+
+## Avaliação III: módulo de notas com PDO
+
+Esta branch migra **somente o módulo de notas** para MySQL/PDO e fornece a infraestrutura compartilhada da Avaliação III. Os Models e Controllers de Aluno e Disciplina continuam usando `$_SESSION` até que os respectivos integrantes concluam suas migrações; por isso, o trabalho completo da Avaliação III ainda não está concluído.
+
+### Requisitos
+
+- PHP 8.2 ou superior com as extensões `PDO` e `pdo_mysql`.
+- Composer.
+- Apache e MySQL/MariaDB do XAMPP.
+- Banco com suporte a InnoDB, chaves estrangeiras e restrições `CHECK`.
+
+### Instalação no XAMPP
+
+1. Coloque o projeto em `C:\xampp\htdocs\mvc-php`.
+2. Execute `composer install` na raiz do projeto.
+3. Inicie Apache e MySQL no painel do XAMPP.
+4. No phpMyAdmin, crie o banco `sistema_academico` com collation `utf8mb4_unicode_ci`.
+5. Selecione esse banco e importe `schema.sql`. O script cria as tabelas sem executar `DROP DATABASE` ou `DROP TABLE`.
+6. Copie `config/database.example.php` para `config/database.php` e ajuste apenas a cópia local. Esse arquivo está ignorado pelo Git.
+7. Acesse `http://localhost/mvc-php/`.
+
+Também é possível configurar a conexão por variáveis de ambiente. Elas têm prioridade sobre o arquivo local:
+
+```text
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=sistema_academico
+DB_USER=root
+DB_PASSWORD=
+DB_CHARSET=utf8mb4
+```
+
+Não inclua senhas reais em commits. A conexão compartilhada é reutilizada durante a requisição e deve ser obtida assim:
+
+```php
+use App\Config\Database;
+
+$pdo = Database::getConnection();
+```
+
+Guilherme e Diogo devem reutilizar essa classe em seus Models e Controllers, sem criar uma segunda conexão. Enquanto os módulos deles ainda estiverem em sessão, alunos e disciplinas usados nas notas precisam ser cadastrados diretamente nas tabelas `alunos` e `disciplinas` para os testes do módulo.
+
+### Funcionalidades migradas
+
+- CRUD de notas em MySQL com prepared statements e IDs `AUTO_INCREMENT`.
+- Validação de aluno, disciplina e intervalo da nota no Model e no banco.
+- Consultas por aluno e disciplina, média e situação conforme `media_minima`.
+- Formulários, listagem e API JSON de notas usando PDO.
+- Chaves estrangeiras com exclusão restrita para preservar notas relacionadas.
+
+### Testes
+
+Os testes de lógica e do controller usam SQLite em memória e não alteram o banco do XAMPP:
+
+```powershell
+composer test
+
+# Alternativa sem o comando Composer disponível no PATH:
+C:\xampp\php\php.exe tests\NotaModelTest.php
+C:\xampp\php\php.exe tests\NotaControllerTest.php
+```
+
+Para o teste de integração, importe primeiro o schema em um banco de teste ou desenvolvimento, configure a conexão e confirme explicitamente a execução:
+
+```powershell
+$env:RUN_DB_TESTS='1'
+$env:DB_NAME='sistema_academico'
+C:\xampp\php\php.exe tests\NotaMysqlTest.php
+Remove-Item Env:RUN_DB_TESTS
+```
+
+O teste MySQL abre uma transação, cria dados fictícios, verifica CRUD, média, situação, validações e chave estrangeira, e executa rollback ao final.
 
 ## Registro de contribuições
 

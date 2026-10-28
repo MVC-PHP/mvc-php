@@ -9,10 +9,8 @@ use App\Views\Render;
 
 session_start();
 
-// A sessão funciona como banco de dados durante a atividade.
 $_SESSION["alunos"] ??= [];
 $_SESSION["disciplinas"] ??= [];
-$_SESSION["notas"] ??= [];
 
 $basedir = "/mvc-php";
 define("BASE_URL", $basedir);
