@@ -2,27 +2,42 @@
 
 namespace App\Models;
 
+use App\Config\Database;
+use InvalidArgumentException;
+use PDO;
+
 class Disciplina
 {
+    private PDO $conexao;
+
+    public function __construct(?PDO $conexao = null)
+    {
+        $this->conexao = $conexao ?? Database::getConnection();
+    }
+
     public function todos(): array
     {
-        return array_values($_SESSION["disciplinas"] ?? []);
+        $consulta = $this->conexao->query(
+            "SELECT id, nome, media_minima FROM disciplinas ORDER BY nome"
+        );
+
+        return array_map([$this, "hidratar"], $consulta->fetchAll());
     }
 
     public function buscarPorId(int $id): ?array
     {
-        foreach ($this->todos() as $disciplina) {
-            if ((int) $disciplina["id"] === $id) {
-                return $disciplina;
-            }
-        }
+        $consulta = $this->conexao->prepare(
+            "SELECT id, nome, media_minima FROM disciplinas WHERE id = :id"
+        );
+        $consulta->execute(["id" => $id]);
+        $disciplina = $consulta->fetch();
 
-        return null;
+        return $disciplina === false ? null : $this->hidratar($disciplina);
     }
 
     public function buscarPorNome(string $termo): array
     {
-        $termo = $this->simplificar($termo);
+        $termo = $this->simplificar(trim($termo));
 
         return array_values(array_filter(
             $this->todos(),
@@ -35,54 +50,88 @@ class Disciplina
         $erros = $this->validar($dados);
 
         if ($erros) {
-            throw new \InvalidArgumentException(implode(" ", $erros));
+            throw new InvalidArgumentException(implode(" ", $erros));
         }
 
-        $_SESSION["disciplinas"] ??= [];
+        $consulta = $this->conexao->prepare(
+            "INSERT INTO disciplinas (nome, media_minima) VALUES (:nome, :media_minima)"
+        );
+        $consulta->execute($this->normalizarDados($dados));
 
-        $disciplina = $this->normalizarDados($dados);
-        $disciplina["id"] = $this->proximoId();
+        $criada = $this->buscarPorId((int) $this->conexao->lastInsertId());
 
-        $_SESSION["disciplinas"][] = $disciplina;
+        if ($criada === null) {
+            throw new \RuntimeException("A disciplina foi inserida, mas não pode ser consultada.");
+        }
 
-        return $disciplina;
+        return $criada;
     }
 
     public function atualizar(int $id, array $dados): array
     {
         if ($this->buscarPorId($id) === null) {
-            throw new \InvalidArgumentException("Disciplina não encontrada.");
+            throw new InvalidArgumentException("Disciplina não encontrada.");
         }
 
         $erros = $this->validar($dados, $id);
 
         if ($erros) {
-            throw new \InvalidArgumentException(implode(" ", $erros));
+            throw new InvalidArgumentException(implode(" ", $erros));
         }
 
-        $atualizada = $this->normalizarDados($dados);
-        $atualizada["id"] = $id;
+        $disciplina = $this->normalizarDados($dados);
+        $disciplina["id"] = $id;
 
-        foreach ($_SESSION["disciplinas"] as $indice => $disciplina) {
-            if ((int) $disciplina["id"] === $id) {
-                $_SESSION["disciplinas"][$indice] = $atualizada;
-                break;
-            }
-        }
+        $consulta = $this->conexao->prepare(
+            "UPDATE disciplinas SET nome = :nome, media_minima = :media_minima WHERE id = :id"
+        );
+        $consulta->execute($disciplina);
 
-        return $atualizada;
+        return $this->buscarPorId($id);
     }
 
     public function excluir(int $id): bool
     {
-        $quantidadeAnterior = count($this->todos());
+        $consulta = $this->conexao->prepare("DELETE FROM disciplinas WHERE id = :id");
+        $consulta->execute(["id" => $id]);
 
-        $_SESSION["disciplinas"] = array_values(array_filter(
-            $this->todos(),
-            fn (array $disciplina): bool => (int) $disciplina["id"] !== $id
-        ));
+        return $consulta->rowCount() > 0;
+    }
 
-        return count($_SESSION["disciplinas"]) < $quantidadeAnterior;
+    public function temNotas(int $id): bool
+    {
+        $consulta = $this->conexao->prepare(
+            "SELECT 1 FROM notas WHERE disciplina_id = :id LIMIT 1"
+        );
+        $consulta->execute(["id" => $id]);
+
+        return $consulta->fetchColumn() !== false;
+    }
+
+    // Relacionamento: alunos que têm notas na disciplina, com média calculada no banco.
+    public function alunosComMedia(int $id): array
+    {
+        $consulta = $this->conexao->prepare(
+            "SELECT a.id, a.nome, AVG(n.valor) AS media, d.media_minima
+             FROM notas n
+             INNER JOIN alunos a ON a.id = n.aluno_id
+             INNER JOIN disciplinas d ON d.id = n.disciplina_id
+             WHERE n.disciplina_id = :id
+             GROUP BY a.id, a.nome, d.media_minima
+             ORDER BY a.nome"
+        );
+        $consulta->execute(["id" => $id]);
+
+        return array_map(function (array $linha): array {
+            $media = (float) $linha["media"];
+
+            return [
+                "id" => (int) $linha["id"],
+                "nome" => $linha["nome"],
+                "media" => $media,
+                "situacao" => $media >= (float) $linha["media_minima"] ? "Aprovado" : "Reprovado",
+            ];
+        }, $consulta->fetchAll());
     }
 
     public function validar(array $dados, ?int $ignorarId = null): array
@@ -119,26 +168,29 @@ class Disciplina
         ];
     }
 
-    private function proximoId(): int
-    {
-        $ids = array_column($this->todos(), "id");
-
-        return $ids ? max($ids) + 1 : 1;
-    }
-
     private function nomeJaExiste(string $nome, ?int $ignorarId): bool
     {
-        foreach ($this->todos() as $disciplina) {
-            if ($ignorarId !== null && (int) $disciplina["id"] === $ignorarId) {
-                continue;
-            }
+        $consulta = $this->conexao->prepare(
+            "SELECT nome FROM disciplinas WHERE id <> :id"
+        );
+        $consulta->execute(["id" => $ignorarId ?? 0]);
 
-            if ($this->simplificar($disciplina["nome"]) === $this->simplificar($nome)) {
+        foreach ($consulta->fetchAll(PDO::FETCH_COLUMN) as $existente) {
+            if ($this->simplificar($existente) === $this->simplificar($nome)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private function hidratar(array $disciplina): array
+    {
+        return [
+            "id" => (int) $disciplina["id"],
+            "nome" => $disciplina["nome"],
+            "media_minima" => (float) $disciplina["media_minima"],
+        ];
     }
 
     private function simplificar(string $texto): string

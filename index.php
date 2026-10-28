@@ -10,7 +10,6 @@ use App\Views\Render;
 session_start();
 
 $_SESSION["alunos"] ??= [];
-$_SESSION["disciplinas"] ??= [];
 
 $basedir = "/mvc-php";
 define("BASE_URL", $basedir);
@@ -116,6 +115,11 @@ if ($url === "/api/disciplinas") {
 
     if ($metodo === "POST") {
         echo (new DisciplinaController())->create();
+        exit;
+    }
+
+    if ($metodo === "PUT") {
+        echo (new DisciplinaController())->update();
         exit;
     }
 
