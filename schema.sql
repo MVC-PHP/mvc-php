@@ -1,6 +1,3 @@
--- Selecione ou crie o banco "sistema_academico" no phpMyAdmin antes de importar.
--- O script nao remove tabelas nem bancos existentes.
-
 CREATE TABLE IF NOT EXISTS alunos (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     nome VARCHAR(100) NOT NULL,

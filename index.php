@@ -9,7 +9,6 @@ use App\Views\Render;
 
 session_start();
 
-// Alunos e disciplinas continuam em sessão até as migrações dos outros integrantes.
 $_SESSION["alunos"] ??= [];
 $_SESSION["disciplinas"] ??= [];
 

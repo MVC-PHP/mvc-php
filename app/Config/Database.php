@@ -39,9 +39,6 @@ final class Database
         return self::$conexao;
     }
 
-    /**
-     * Alias temporario para codigo local que tenha usado a primeira versao da classe.
-     */
     public static function conectar(): PDO
     {
         return self::getConnection();
