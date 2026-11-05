@@ -1,11 +1,16 @@
-<?php $baseUrl = BASE_URL; ?>
+<?php
+    $baseUrl = BASE_URL;
+    $ehAdmin = ($_SESSION["usuario"]["perfil"] ?? "") === "admin";
+?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h2 mb-1">Disciplinas</h1>
         <p class="text-secondary mb-0">Gerencie as disciplinas e a média mínima de cada uma.</p>
     </div>
-    <a class="btn btn-primary" href="<?= $baseUrl ?>/disciplinas/criar">Nova disciplina</a>
+    <?php if ($ehAdmin): ?>
+        <a class="btn btn-primary" href="<?= $baseUrl ?>/disciplinas/criar">Nova disciplina</a>
+    <?php endif; ?>
 </div>
 
 <form class="row g-2 mb-3" method="get" action="<?= $baseUrl ?>/disciplinas">
@@ -49,21 +54,23 @@
                                 >
                                     Ver
                                 </a>
-                                <a
-                                    class="btn btn-sm btn-outline-primary"
-                                    href="<?= $baseUrl ?>/disciplinas/editar?id=<?= (int) $disciplina["id"] ?>"
-                                >
-                                    Editar
-                                </a>
-                                <form
-                                    class="d-inline"
-                                    method="post"
-                                    action="<?= $baseUrl ?>/disciplinas/excluir"
-                                    onsubmit="return confirm('Deseja excluir esta disciplina?')"
-                                >
-                                    <input type="hidden" name="id" value="<?= (int) $disciplina["id"] ?>">
-                                    <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
-                                </form>
+                                <?php if ($ehAdmin): ?>
+                                    <a
+                                        class="btn btn-sm btn-outline-primary"
+                                        href="<?= $baseUrl ?>/disciplinas/editar?id=<?= (int) $disciplina["id"] ?>"
+                                    >
+                                        Editar
+                                    </a>
+                                    <form
+                                        class="d-inline"
+                                        method="post"
+                                        action="<?= $baseUrl ?>/disciplinas/excluir"
+                                        onsubmit="return confirm('Deseja excluir esta disciplina?')"
+                                    >
+                                        <input type="hidden" name="id" value="<?= (int) $disciplina["id"] ?>">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+                                    </form>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

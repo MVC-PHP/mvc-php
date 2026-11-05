@@ -9,9 +9,11 @@
         <h1 class="h2 mb-1"><?= htmlspecialchars($aluno["nome"]) ?></h1>
         <p class="text-secondary mb-0">Notas e médias do aluno em cada disciplina.</p>
     </div>
-    <a class="btn btn-outline-primary" href="<?= $baseUrl ?>/alunos/editar?id=<?= (int) $aluno["id"] ?>">
-        Editar
-    </a>
+    <?php if (($_SESSION["usuario"]["perfil"] ?? "") === "admin"): ?>
+        <a class="btn btn-outline-primary" href="<?= $baseUrl ?>/alunos/editar?id=<?= (int) $aluno["id"] ?>">
+            Editar
+        </a>
+    <?php endif; ?>
 </div>
 
 <div class="card shadow-sm">
