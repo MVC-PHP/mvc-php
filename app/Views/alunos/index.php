@@ -1,11 +1,16 @@
-<?php $baseUrl = BASE_URL; ?>
+<?php
+    $baseUrl = BASE_URL;
+    $ehAdmin = ($_SESSION["usuario"]["perfil"] ?? "") === "admin";
+?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h2 mb-1">Alunos</h1>
         <p class="text-secondary mb-0">Gerencie os alunos cadastrados.</p>
     </div>
-    <a class="btn btn-primary" href="<?= $baseUrl ?>/alunos/criar">Novo aluno</a>
+    <?php if ($ehAdmin): ?>
+        <a class="btn btn-primary" href="<?= $baseUrl ?>/alunos/criar">Novo aluno</a>
+    <?php endif; ?>
 </div>
 
 <form class="row g-2 mb-3" method="get" action="<?= $baseUrl ?>/alunos">
@@ -47,21 +52,23 @@
                                 >
                                     Ver
                                 </a>
-                                <a
-                                    class="btn btn-sm btn-outline-primary"
-                                    href="<?= $baseUrl ?>/alunos/editar?id=<?= (int) $aluno["id"] ?>"
-                                >
-                                    Editar
-                                </a>
-                                <form
-                                    class="d-inline"
-                                    method="post"
-                                    action="<?= $baseUrl ?>/alunos/excluir"
-                                    onsubmit="return confirm('Deseja excluir este aluno?')"
-                                >
-                                    <input type="hidden" name="id" value="<?= (int) $aluno["id"] ?>">
-                                    <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
-                                </form>
+                                <?php if ($ehAdmin): ?>
+                                    <a
+                                        class="btn btn-sm btn-outline-primary"
+                                        href="<?= $baseUrl ?>/alunos/editar?id=<?= (int) $aluno["id"] ?>"
+                                    >
+                                        Editar
+                                    </a>
+                                    <form
+                                        class="d-inline"
+                                        method="post"
+                                        action="<?= $baseUrl ?>/alunos/excluir"
+                                        onsubmit="return confirm('Deseja excluir este aluno?')"
+                                    >
+                                        <input type="hidden" name="id" value="<?= (int) $aluno["id"] ?>">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+                                    </form>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

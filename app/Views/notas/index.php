@@ -1,11 +1,16 @@
-<?php $baseUrl = BASE_URL; ?>
+<?php
+    $baseUrl = BASE_URL;
+    $ehAdmin = ($_SESSION["usuario"]["perfil"] ?? "") === "admin";
+?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="h2 mb-1">Notas</h1>
         <p class="text-secondary mb-0">Gerencie as notas dos alunos.</p>
     </div>
-    <a class="btn btn-primary" href="<?= $baseUrl ?>/notas/criar">Nova nota</a>
+    <?php if ($ehAdmin): ?>
+        <a class="btn btn-primary" href="<?= $baseUrl ?>/notas/criar">Nova nota</a>
+    <?php endif; ?>
 </div>
 
 <div class="card shadow-sm">
@@ -27,21 +32,23 @@
                             <td><?= htmlspecialchars($nota["disciplina"]["nome"] ?? "Disciplina não encontrada") ?></td>
                             <td><?= number_format((float) $nota["valor"], 1, ",", ".") ?></td>
                             <td class="text-end text-nowrap">
-                                <a
-                                    class="btn btn-sm btn-outline-primary"
-                                    href="<?= $baseUrl ?>/notas/editar?id=<?= (int) $nota["id"] ?>"
-                                >
-                                    Editar
-                                </a>
-                                <form
-                                    class="d-inline"
-                                    method="post"
-                                    action="<?= $baseUrl ?>/notas/excluir"
-                                    onsubmit="return confirm('Deseja excluir esta nota?')"
-                                >
-                                    <input type="hidden" name="id" value="<?= (int) $nota["id"] ?>">
-                                    <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
-                                </form>
+                                <?php if ($ehAdmin): ?>
+                                    <a
+                                        class="btn btn-sm btn-outline-primary"
+                                        href="<?= $baseUrl ?>/notas/editar?id=<?= (int) $nota["id"] ?>"
+                                    >
+                                        Editar
+                                    </a>
+                                    <form
+                                        class="d-inline"
+                                        method="post"
+                                        action="<?= $baseUrl ?>/notas/excluir"
+                                        onsubmit="return confirm('Deseja excluir esta nota?')"
+                                    >
+                                        <input type="hidden" name="id" value="<?= (int) $nota["id"] ?>">
+                                        <button class="btn btn-sm btn-outline-danger" type="submit">Excluir</button>
+                                    </form>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

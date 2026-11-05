@@ -12,9 +12,12 @@
             <strong><?= number_format((float) $disciplina["media_minima"], 1, ",", ".") ?></strong>
         </p>
     </div>
-    <a class="btn btn-outline-primary" href="<?= $baseUrl ?>/disciplinas/editar?id=<?= (int) $disciplina["id"] ?>">
-        Editar
-    </a>
+    <?php if (($_SESSION["usuario"]["perfil"] ?? "") === "admin"): ?>
+        <a class="btn btn-outline-primary" href="<?= $baseUrl ?>/disciplinas/editar?id=<?= (int) $disciplina["id"] ?>">
+            Editar
+        </a>
+    <?php endif; ?>
+
 </div>
 
 <div class="card shadow-sm">

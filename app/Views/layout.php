@@ -45,6 +45,20 @@
                     <li class="nav-item">
                         <a class="nav-link" href="<?= $baseUrl ?>/notas">Notas</a>
                     </li>
+                    <?php if (isset($_SESSION["usuario"])): ?>
+                        <li class="nav-item">
+                            <span class="nav-link">Olá, <?= htmlspecialchars($_SESSION["usuario"]["nome"]) ?></span>
+                        </li>
+                        <li class="nav-item">
+                            <form method="post" action="<?= $baseUrl ?>/logout">
+                            <button class="btn btn-outline-light btn-sm mt-1" type="submit">Sair</button>
+                            </form>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item">
+                            <a class="nav-link" href="<?= $baseUrl ?>/login">Entrar</a>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>

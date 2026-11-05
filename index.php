@@ -5,6 +5,7 @@ require_once __DIR__ . "/vendor/autoload.php";
 use App\Controllers\AlunoController;
 use App\Controllers\DisciplinaController;
 use App\Controllers\NotaController;
+use App\Controllers\AuthController;
 use App\Views\Render;
 
 session_start();
@@ -21,6 +22,58 @@ if (str_starts_with($url, $basedir)) {
 $url = "/" . trim($url, "/");
 $metodo = $_SERVER["REQUEST_METHOD"] ?? "GET";
 $render = new Render();
+
+if ($url === "/login") {
+    if ($metodo === "GET") {
+        echo (new AuthController())->mostrarLogin();
+        exit;
+    }
+    if ($metodo === "POST") {
+        (new AuthController())->entrar();
+    }
+}
+
+if ($metodo === "POST" && $url === "/logout") {
+    (new AuthController())->sair();
+}
+
+$rotasPublicas = ["/", "/login"];
+$logado = isset($_SESSION["usuario"]);
+if (!$logado && !in_array($url, $rotasPublicas, true)) {
+    if (str_starts_with($url, "/api/")) {
+        http_response_code(401);
+        header("Content-Type: application/json; charset=UTF-8");
+        echo json_encode(["erro" => "Faça login para acessar a API."], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $_SESSION["flash"] = ["tipo" => "warning", "mensagem" => "Faça login para continuar."];
+    header("Location: " . BASE_URL . "/login");
+    exit;
+}
+
+$ehAdmin = ($_SESSION["usuario"]["perfil"] ?? "") === "admin";
+$rotaDeEscrita = $metodo !== "GET" 
+|| str_ends_with($url, "/criar")
+|| str_ends_with($url, "/editar");
+
+if ($logado && $rotaDeEscrita && !$ehAdmin && !in_array($url, ["/login", "/logout"], true)) {
+    if (str_starts_with($url, "/api/")) {
+        http_response_code(403);
+        header("Content-Type: application/json; charset=UTF-8");
+        echo json_encode(["erro" => "Apenas administradores podem fazer isso."], 
+        JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    $_SESSION["flash"] = ["tipo" => "danger", "mensagem" => "Apenas administradores podem fazer 
+    isso."];
+    header("Location: " . BASE_URL . "/");
+    exit;
+}
+
+
+
 
 if ($metodo === "GET" && $url === "/") {
     echo $render->render("inicio", [
