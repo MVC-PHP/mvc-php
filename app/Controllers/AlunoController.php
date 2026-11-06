@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\Aluno;
 use App\Views\Render;
 use InvalidArgumentException;
+use PDOException;
 
 class AlunoController
 {
@@ -101,8 +102,15 @@ class AlunoController
         } elseif ($this->temNotas($id)) {
             $this->mensagem("danger", "Não dá pra excluir: o aluno já tem notas lançadas.");
         } else {
-            $this->model->excluir($id);
-            $this->mensagem("success", "Aluno excluído com sucesso.");
+            try {
+                $this->model->excluir($id);
+                $this->mensagem("success", "Aluno excluído com sucesso.");
+            } catch (PDOException $erro) {
+                if (!self::violouChaveEstrangeira($erro)) {
+                    throw $erro;
+                }
+                $this->mensagem("danger", "Não dá pra excluir: registro vinculado a notas.");
+            }
         }
 
         $this->redirecionar("/alunos");
@@ -159,9 +167,28 @@ class AlunoController
             return $this->json(["erro" => "O aluno já tem notas lançadas."], 409);
         }
 
-        $this->model->excluir($id);
+        try {
+
+            $this->model->excluir($id);
+
+        } catch (PDOException $erro) {
+
+            if (!self::violouChaveEstrangeira($erro)) {
+
+                throw $erro;
+
+            }
+
+            return $this->json(["erro" => "Registro vinculado a notas."], 409);
+
+        }
 
         return $this->json(["mensagem" => "Aluno excluído com sucesso."]);
+    }
+
+    private static function violouChaveEstrangeira(PDOException $erro): bool
+    {
+        return (int) ($erro->errorInfo[1] ?? 0) === 1451;
     }
 
     private function temNotas(int $id): bool
