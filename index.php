@@ -6,6 +6,7 @@ use App\Controllers\AlunoController;
 use App\Controllers\DisciplinaController;
 use App\Controllers\NotaController;
 use App\Controllers\AuthController;
+use App\Controllers\RelatorioController;
 use App\Views\Render;
 
 session_start();
@@ -83,6 +84,14 @@ if ($metodo === "GET" && $url === "/") {
 }
 
 if ($metodo === "GET") {
+    if ($url === "/relatorios") {
+        echo (new RelatorioController())->index();
+        exit;
+    }
+    if ($url === "/relatorios/exportar") {
+        (new RelatorioController())->exportar();
+        exit;
+    }
     if ($url === "/notas") {
         echo (new NotaController())->index();
         exit;
@@ -122,6 +131,10 @@ if ($url === "/api/notas") {
 
     if ($metodo === "DELETE") {
         echo (new NotaController())->delete();
+        exit;
+    }
+    if ($metodo === "PUT") {
+        echo (new NotaController())->update();
         exit;
     }
 }

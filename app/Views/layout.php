@@ -46,6 +46,9 @@
                         <a class="nav-link" href="<?= $baseUrl ?>/notas">Notas</a>
                     </li>
                     <?php if (isset($_SESSION["usuario"])): ?>
+                        <li class="nav-item"><a class="nav-link" href="<?= $baseUrl ?>/relatorios">Relatórios</a></li>
+                    <?php endif; ?>
+                    <?php if (isset($_SESSION["usuario"])): ?>
                         <li class="nav-item">
                             <span class="nav-link">Olá, <?= htmlspecialchars($_SESSION["usuario"]["nome"]) ?></span>
                         </li>
