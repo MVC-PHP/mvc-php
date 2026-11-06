@@ -1,3 +1,8 @@
+CREATE DATABASE IF NOT EXISTS sistema_academico
+    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+USE sistema_academico;
+
 CREATE TABLE IF NOT EXISTS alunos (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     nome VARCHAR(100) NOT NULL,
@@ -28,4 +33,14 @@ CREATE TABLE IF NOT EXISTS notas (
     CONSTRAINT fk_notas_disciplina
         FOREIGN KEY (disciplina_id) REFERENCES disciplinas (id)
         ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL,
+    perfil ENUM('admin', 'usuario') NOT NULL DEFAULT 'usuario',
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_usuarios_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

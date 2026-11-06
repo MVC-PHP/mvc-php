@@ -14,18 +14,18 @@ final class Database
             return self::$conexao;
         }
 
-        $arquivo = dirname(__DIR__, 2) . "/config/database.php";
+        $arquivo = dirname(__DIR__, 2) . "/config.php";
         $configuracaoLocal = is_file($arquivo) ? require $arquivo : [];
 
         if (!is_array($configuracaoLocal)) {
-            throw new \RuntimeException("O arquivo config/database.php deve retornar um array.");
+            throw new \RuntimeException("O arquivo config.php deve retornar um array.");
         }
 
         $host = self::configuracao("DB_HOST", $configuracaoLocal, "host", "127.0.0.1");
         $porta = self::configuracao("DB_PORT", $configuracaoLocal, "port", "3306");
-        $banco = self::configuracao("DB_NAME", $configuracaoLocal, "database", "sistema_academico");
-        $usuario = self::configuracao("DB_USER", $configuracaoLocal, "username", "root");
-        $senha = self::configuracao("DB_PASSWORD", $configuracaoLocal, "password", "");
+        $banco = self::configuracao("DB_NAME", $configuracaoLocal, "db", "sistema_academico");
+        $usuario = self::configuracao("DB_USER", $configuracaoLocal, "user", "root");
+        $senha = self::configuracao("DB_PASSWORD", $configuracaoLocal, "pass", "");
         $charset = self::configuracao("DB_CHARSET", $configuracaoLocal, "charset", "utf8mb4");
 
         $dsn = "mysql:host={$host};port={$porta};dbname={$banco};charset={$charset}";

@@ -15,7 +15,7 @@ Projeto das Avaliações II e III de Linguagem de Programação PHP, feito em ci
 - `app/Views/layout.php`: estrutura visual comum feita com Bootstrap.
 - `composer.json`: configura o autoload PSR-4 das classes em `app/`.
 - `app/Config/Database.php`: abre a conexão PDO com o MySQL, uma vez só por requisição.
-- `schema.sql`: cria as tabelas `alunos`, `disciplinas` e `notas`, com as chaves estrangeiras.
+- `database/schema.sql` e `database/seed.sql`: criam o banco, as tabelas `alunos`, `disciplinas`, `notas` e `usuarios`, e os dados de teste, com as chaves estrangeiras.
 - MySQL/PDO: onde ficam os dados dos três módulos. A sessão agora só guarda as mensagens de aviso e o que foi digitado num formulário que deu erro.
 
 ## Como executar
@@ -42,8 +42,8 @@ Agora os três módulos (alunos, disciplinas e notas) salvam e leem os dados dir
 2. Execute `composer install` na raiz do projeto.
 3. Inicie Apache e MySQL no painel do XAMPP.
 4. No phpMyAdmin, crie o banco `sistema_academico` com collation `utf8mb4_unicode_ci`.
-5. Selecione esse banco e importe `schema.sql`. O script cria as tabelas sem executar `DROP DATABASE` ou `DROP TABLE`.
-6. Copie `config/database.example.php` para `config/database.php` e ajuste apenas a cópia local. Esse arquivo está ignorado pelo Git.
+5. Selecione esse banco e importe `database/schema.sql` e depois `database/seed.sql`.
+6. Ajuste `config.php` na raiz, se necessário (o padrão é o do XAMPP: root, sem senha).
 7. Acesse `http://localhost/mvc-php/`.
 
 Também é possível configurar a conexão por variáveis de ambiente. Elas têm prioridade sobre o arquivo local:
