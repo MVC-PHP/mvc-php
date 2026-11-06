@@ -114,6 +114,14 @@ class NotaController
     public function list(): string
     {
         try {
+            if (array_key_exists("id", $_GET)) {
+                $id = $this->idApi();
+                if ($id === null) {
+                    return $this->json(["erro" => "ID inválido."], 422);
+                }
+                $nota = $this->model->buscarPorId($id);
+                return $nota === null ? $this->json(["erro" => "Nota não encontrada."], 404) : $this->json($nota);
+            }
             return $this->json($this->model->todos());
         } catch (PDOException $erro) {
             error_log($erro->getMessage());
@@ -152,6 +160,35 @@ class NotaController
         }
 
         return $this->json(["mensagem" => "Nota excluída com sucesso."]);
+    }
+
+    public function update(?array $dados = null): string
+    {
+        $id = $this->idApi();
+        if ($id === null) {
+            return $this->json(["erro" => "ID inválido."], 422);
+        }
+        try {
+            if ($this->model->buscarPorId($id) === null) {
+                return $this->json(["erro" => "Nota não encontrada."], 404);
+            }
+            $dados ??= json_decode(file_get_contents("php://input"), true);
+            if (!is_array($dados) || array_is_list($dados)) {
+                return $this->json(["erro" => "JSON inválido."], 422);
+            }
+            return $this->json($this->model->atualizar($id, $dados));
+        } catch (InvalidArgumentException $erro) {
+            return $this->json(["erro" => $erro->getMessage()], 422);
+        } catch (\Throwable $erro) {
+            error_log($erro->getMessage());
+            return $this->json(["erro" => "Falha ao acessar o banco de dados."], 500);
+        }
+    }
+
+    private function idApi(): ?int
+    {
+        $id = filter_var($_GET["id"] ?? null, FILTER_VALIDATE_INT);
+        return $id !== false && $id !== null && $id > 0 ? $id : null;
     }
 
     private function buscarRegistro(string $tabela, int $id): ?array
