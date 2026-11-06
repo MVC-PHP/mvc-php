@@ -31,6 +31,15 @@ $pdo = new PDO("sqlite::memory:", null, null, [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 ]);
+$pdo->sqliteCreateFunction("like", static function (string $padrao, string $valor, string $escape = "!"): int {
+    $normalizar = static fn (string $texto): string => mb_strtolower(str_replace(["~", "'", "`", "^", '"'], "", iconv("UTF-8", "ASCII//TRANSLIT", $texto)));
+    $partes = preg_split('/([%_]|!.)/u', $normalizar($padrao), -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+    $regex = '';
+    foreach ($partes as $parte) {
+        $regex .= $parte === '%' ? '.*' : ($parte === '_' ? '.' : preg_quote(str_starts_with($parte, '!') ? substr($parte, 1) : $parte, '/'));
+    }
+    return preg_match('/^' . $regex . '$/u', $normalizar($valor)) === 1 ? 1 : 0;
+}, 3);
 $pdo->exec("PRAGMA foreign_keys = ON");
 $pdo->exec("CREATE TABLE alunos (id INTEGER PRIMARY KEY AUTOINCREMENT, nome VARCHAR(100) NOT NULL)");
 $pdo->exec("CREATE TABLE disciplinas (
@@ -57,6 +66,9 @@ verificar(count($model->todos()) === 2, "lista todas as disciplinas");
 verificar($model->buscarPorId(99) === null, "retorna null para ID inexistente");
 verificar(count($model->buscarPorNome("PROGRAMACAO")) === 1, "busca por nome ignora maiúsculas e acentos");
 
+verificar(count($model->buscarPorNome("grama")) === 1, "busca parcial");
+verificar($model->buscarPorNome("inexistente") === [], "busca sem resultado");
+verificar($model->buscarPorNome("%") === [] && $model->buscarPorNome("_") === [], "curingas literais");
 esperarExcecao(fn () => $model->criar(["nome" => "programacao php", "media_minima" => "5"]), "bloqueia nome repetido");
 esperarExcecao(fn () => $model->criar(["nome" => "AB", "media_minima" => "5"]), "bloqueia nome curto");
 esperarExcecao(fn () => $model->criar(["nome" => "Redes", "media_minima" => "11"]), "bloqueia média fora de 0 a 10");

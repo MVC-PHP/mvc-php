@@ -37,12 +37,15 @@ class Disciplina
 
     public function buscarPorNome(string $termo): array
     {
-        $termo = $this->simplificar(trim($termo));
+        $termo = str_replace(["!", "%", "_"], ["!!", "!%", "!_"], trim($termo));
+        $collation = $this->conexao->getAttribute(PDO::ATTR_DRIVER_NAME) === "mysql"
+            ? " COLLATE utf8mb4_unicode_ci" : "";
+        $consulta = $this->conexao->prepare(
+            "SELECT id, nome, media_minima FROM disciplinas WHERE nome{$collation} LIKE :termo ESCAPE '!' ORDER BY nome"
+        );
+        $consulta->execute(["termo" => "%{$termo}%"]);
 
-        return array_values(array_filter(
-            $this->todos(),
-            fn (array $disciplina): bool => str_contains($this->simplificar($disciplina["nome"]), $termo)
-        ));
+        return array_map([$this, "hidratar"], $consulta->fetchAll());
     }
 
     public function criar(array $dados): array
