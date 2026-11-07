@@ -1,163 +1,187 @@
-# Sistema Acadêmico MVC em PHP
+# Sistema Acadêmico — Avaliação IV (PHP MVC)
 
-Projeto das Avaliações II e III de Linguagem de Programação PHP, feito em cima da estrutura MVC que vimos na Aula 8. Na Avaliação II tudo ficava salvo na sessão; na III a gente passou tudo pro MySQL usando PDO, sem mexer nas rotas nem nas telas.
+MVP acadêmico de gestão de alunos, disciplinas e notas em PHP 8 com arquitetura MVC simples, MySQL/MariaDB e PDO. Desenvolvido ao longo das Avaliações II e III e ampliado na Avaliação IV com autenticação, perfis, relatórios, exportação CSV e tratamento de erros.
 
-## Integrantes e responsabilidades
+**Tema:** Sistema Acadêmico  
+**Integrantes:** Guilherme Henrique Canducci, Diogo Berçocano e Thiago Henrique Piovan Costa.  
+**Versão da entrega:** [branch `staging`](https://github.com/MVC-PHP/mvc-php/tree/staging).
 
-- Guilherme Henrique Canducci: Model Aluno, AlunoController e views de alunos.
-- Diogo Berçocano: Model Disciplina, DisciplinaController e views de disciplinas.
-- Thiago Henrique Piovan Costa: Model Nota, NotaController e views de notas.
+## Funcionalidades
 
-## Estrutura compartilhada
+- CRUD de alunos e disciplinas: cadastro, listagem, pesquisa, detalhes, edição e exclusão.
+- CRUD de notas vinculadas a alunos e disciplinas; cálculo de médias e situação de aprovação.
+- Busca parcial de alunos e disciplinas diretamente no SQL, com consultas PDO parametrizadas.
+- Login e logout com sessões PHP e verificação de senha via `password_verify()`.
+- Perfis **administrador** (consulta e alterações) e **usuário comum** (consulta).
+- Rotas protegidas: acesso não autenticado à API recebe HTTP 401; alteração por usuário comum recebe HTTP 403.
+- API JSON para listagem, consulta individual, cadastro, atualização e exclusão das três entidades.
+- Relatório acadêmico por aluno/disciplina, com médias e filtro por todos, aprovados e reprovados.
+- Exportação CSV do relatório com o filtro aplicado, separador `;` e UTF-8 com BOM.
+- Validações no servidor, controle de integridade referencial, mensagens de feedback e página amigável para erros inesperados.
 
-- `index.php`: ponto de entrada, inicialização da sessão e roteamento.
-- `app/Views/Render.php`: carrega a view solicitada e a insere no layout.
-- `app/Views/layout.php`: estrutura visual comum feita com Bootstrap.
-- `composer.json`: configura o autoload PSR-4 das classes em `app/`.
-- `app/Config/Database.php`: abre a conexão PDO com o MySQL, uma vez só por requisição.
-- `database/schema.sql` e `database/seed.sql`: criam o banco, as tabelas `alunos`, `disciplinas`, `notas` e `usuarios`, e os dados de teste, com as chaves estrangeiras.
-- MySQL/PDO: onde ficam os dados dos três módulos. A sessão agora só guarda as mensagens de aviso e o que foi digitado num formulário que deu erro.
+## Requisitos
 
-## Como executar
+- PHP **8.2 ou superior**, com extensões `pdo`, `pdo_mysql` e `mbstring`.
+- Apache, MySQL/MariaDB e Composer (por exemplo, pelo XAMPP).
+- `pdo_sqlite` para executar os testes automatizados em memória.
+- Banco com InnoDB, chaves estrangeiras e suporte a restrições `CHECK`.
 
-1. Coloque o projeto na pasta `htdocs/mvc-php` do XAMPP.
-2. Na raiz do projeto, execute `composer install`.
-3. Inicie o Apache e o MySQL no XAMPP e crie o banco seguindo a seção "Instalação no XAMPP" logo abaixo.
-4. Acesse `http://localhost/mvc-php/`.
+O projeto utiliza PHP puro e Bootstrap, sem Laravel.
 
-## Avaliação III: tudo no MySQL com PDO
+## Estrutura do projeto
 
-Agora os três módulos (alunos, disciplinas e notas) salvam e leem os dados direto do MySQL. Cada um fez a migração da sua parte usando a mesma conexão compartilhada, e as rotas, os controllers e as telas continuaram funcionando do mesmo jeito.
+| Caminho | Função |
+| --- | --- |
+| `index.php` | Roteamento, proteção de acesso e tratamento centralizado de exceções |
+| `config.php` | Configuração do MySQL, com valores padrão para XAMPP |
+| `app/Config/Database.php` | Conexão PDO compartilhada (`ERRMODE_EXCEPTION`, `FETCH_ASSOC`) |
+| `app/Models/` | Models Aluno, Disciplina, Nota, Usuario e Relatorio |
+| `app/Controllers/` | Controllers web, autenticação, API e relatórios |
+| `app/Views/` | Telas Bootstrap e página de erro |
+| `database/schema.sql` | Banco e tabelas `alunos`, `disciplinas`, `notas` e `usuarios`, com FKs |
+| `database/seed.sql` | Dados de demonstração e usuários de teste |
+| `tests/` | Testes de Models, Controllers e Avaliação IV |
+| `composer.json` | Autoload PSR-4 e comandos de teste |
 
-### Requisitos
+## Instalação no XAMPP
 
-- PHP 8.2 ou superior com as extensões `PDO` e `pdo_mysql`.
-- Composer.
-- Apache e MySQL/MariaDB do XAMPP.
-- Banco com suporte a InnoDB, chaves estrangeiras e restrições `CHECK`.
-
-### Instalação no XAMPP
-
-1. Coloque o projeto em `C:\xampp\htdocs\mvc-php`.
-2. Execute `composer install` na raiz do projeto.
+1. Baixe a branch `staging` e coloque o projeto em `C:\xampp\htdocs\mvc-php`.
+2. Abra um terminal na raiz e execute `composer install`.
 3. Inicie Apache e MySQL no painel do XAMPP.
-4. No phpMyAdmin, crie o banco `sistema_academico` com collation `utf8mb4_unicode_ci`.
-5. Selecione esse banco e importe `database/schema.sql` e depois `database/seed.sql`.
-6. Ajuste `config.php` na raiz, se necessário (o padrão é o do XAMPP: root, sem senha).
-7. Acesse `http://localhost/mvc-php/`.
+4. No phpMyAdmin, importe **primeiro** `database/schema.sql`. Esse script cria, se necessário, o banco `sistema_academico` e seleciona-o.
+5. Importe **depois** `database/seed.sql` para cadastrar alunos, disciplinas, notas e usuários de demonstração. **Execute o seed em um banco vazio**: os IDs e e-mails são fixos, e repetir a importação pode gerar duplicações.
+6. Confira `config.php` na raiz. Os valores padrão são host `127.0.0.1`, porta `3306`, banco `sistema_academico`, usuário `root`, senha vazia e charset `utf8mb4`.
+7. Abra <http://localhost/mvc-php/> e entre com uma das contas abaixo.
 
-Também é possível configurar a conexão por variáveis de ambiente. Elas têm prioridade sobre o arquivo local:
+A classe `Database.php` também aceita `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` e `DB_CHARSET` por variáveis de ambiente. Valores de ambiente não vazios têm prioridade sobre `config.php`. Não publique senhas pessoais no repositório.
 
-```text
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_NAME=sistema_academico
-DB_USER=root
-DB_PASSWORD=
-DB_CHARSET=utf8mb4
+**Atenção:** as URLs usam o prefixo `/mvc-php` definido em `index.php`; se a pasta receber outro nome, o prefixo precisará ser ajustado na aplicação.
+
+## Usuários de demonstração
+
+Depois de importar `database/seed.sql`:
+
+| Perfil | E-mail | Senha | Acesso |
+| --- | --- | --- | --- |
+| Administrador | `admin@escola.com` | `admin123` | Listar, consultar, cadastrar, editar e excluir |
+| Usuário comum | `usuario@escola.com` | `usuario123` | Listar, consultar, pesquisar, visualizar relatórios e exportar CSV |
+
+As senhas são armazenadas como hashes no banco. Essas credenciais são exclusivas para a demonstração acadêmica.
+
+## Rotas web
+
+As rotas abaixo usam o prefixo `http://localhost/mvc-php`.
+
+| Método | Rota | Finalidade |
+| --- | --- | --- |
+| GET | `/` | Página inicial |
+| GET / POST | `/login` | Exibir formulário / autenticar |
+| POST | `/logout` | Encerrar sessão |
+| GET | `/alunos` | Listar e buscar usando `?q=` |
+| GET | `/alunos/detalhe?id=1` | Detalhes e médias do aluno |
+| GET | `/alunos/criar`, `/alunos/editar?id=1` | Formulários (admin) |
+| POST | `/alunos/salvar`, `/alunos/excluir` | Gravar ou excluir aluno (admin) |
+| GET | `/disciplinas` | Listar e buscar usando `?q=` |
+| GET | `/disciplinas/detalhe?id=1` | Detalhes e médias da disciplina |
+| GET | `/disciplinas/criar`, `/disciplinas/editar?id=1` | Formulários (admin) |
+| POST | `/disciplinas/salvar`, `/disciplinas/excluir` | Gravar ou excluir disciplina (admin) |
+| GET | `/notas` | Listar notas |
+| GET | `/notas/criar`, `/notas/editar?id=1` | Formulários (admin) |
+| POST | `/notas/salvar`, `/notas/excluir` | Gravar ou excluir nota (admin) |
+| GET | `/relatorios?status=todos` | Relatório com filtro `todos`, `aprovados` ou `reprovados` |
+| GET | `/relatorios/exportar?status=todos` | Baixar CSV com o filtro aplicado |
+
+Página inicial e login são públicos. As demais páginas exigem login. Ações de escrita e formulários de criação/edição exigem administrador.
+
+## API JSON
+
+Base: `http://localhost/mvc-php`. As rotas `/api/*` exigem sessão autenticada; os métodos de escrita exigem perfil administrador. Respostas JSON usam `Content-Type: application/json; charset=UTF-8`.
+
+| Entidade | GET (lista, detalhe e busca) | POST | PUT | DELETE |
+| --- | --- | --- | --- | --- |
+| Alunos | `/api/alunos`, `/api/alunos?id=1`, `/api/alunos?q=Ana` | `/api/alunos` | `/api/alunos?id=1` | `/api/alunos?id=1` |
+| Disciplinas | `/api/disciplinas`, `/api/disciplinas?id=1`, `/api/disciplinas?q=PHP` | `/api/disciplinas` | `/api/disciplinas?id=1` | `/api/disciplinas?id=1` |
+| Notas | `/api/notas`, `/api/notas?id=1` | `/api/notas` | `/api/notas?id=1` | `/api/notas?id=1` |
+
+Exemplos de corpos JSON para cadastro/alteração:
+
+```json
+{"nome": "Maria Silva"}
 ```
 
-Não inclua senhas reais em commits. A conexão compartilhada é reutilizada durante a requisição e deve ser obtida assim:
-
-```php
-use App\Config\Database;
-
-$pdo = Database::getConnection();
+```json
+{"nome": "Programação Web", "media_minima": 6.0}
 ```
 
-Os três Models usam essa mesma classe, então ninguém abre uma segunda conexão.
+```json
+{"aluno_id": 1, "disciplina_id": 1, "valor": 8.5}
+```
 
-### Módulo de notas com PDO
+Entre os códigos de resposta utilizados estão `200` para consulta/atualização, `201` para criação, `401` sem autenticação, `403` sem permissão, `404` para registros inexistentes, `422` para entradas inválidas, `409` para exclusões impedidas por vínculos e `500` em falhas inesperadas.
 
-- CRUD de notas em MySQL com prepared statements e IDs `AUTO_INCREMENT`.
-- Validação de aluno, disciplina e intervalo da nota no Model e no banco.
-- Consultas por aluno e disciplina, média e situação conforme `media_minima`.
-- Formulários, listagem e API JSON de notas usando PDO.
-- Chaves estrangeiras com exclusão restrita para preservar notas relacionadas.
+## Relatório e exportação CSV
 
-### Módulo de disciplinas com PDO
+Após o login, entre em `/relatorios`. Cada linha mostra aluno, disciplina, média calculada com `AVG(n.valor)`, média mínima e situação. A nota média igual ou superior à média mínima significa **Aprovado**.
 
-- `app/Models/Disciplina.php` usa `Database::getConnection()` com prepared statements para listar, buscar por ID, buscar por nome (sem diferenciar maiúsculas e acentos), cadastrar, atualizar e excluir.
-- As validações continuam no Model: nome de 3 a 100 caracteres sem repetição e média mínima entre 0 e 10.
-- Relacionamento com notas: `alunosComMedia()` faz `JOIN` entre `notas`, `alunos` e `disciplinas` e calcula a média com `AVG` no banco, usado na tela de detalhe da disciplina.
-- A exclusão de disciplina com notas é bloqueada no controller e também pela chave estrangeira `fk_notas_disciplina` (`ON DELETE RESTRICT`).
-- API `/api/disciplinas`: `GET` (todas, `?id=` ou `?q=`), `POST`, `PUT ?id=` e `DELETE ?id=`.
+O parâmetro `status` aceita `todos` (padrão), `aprovados` e `reprovados`. O botão **Baixar CSV** exporta os mesmos resultados do filtro escolhido nas colunas Aluno, Disciplina, Média, Média mínima e Situação. Tanto o relatório quanto o CSV podem ser acessados pelos dois perfis autenticados.
 
+## Testes
 
-### Módulo de alunos com PDO
-
-- O `app/Models/Aluno.php` saiu da sessão e agora conversa com a tabela `alunos` pelo `Database::getConnection()`, sempre com prepared statements. Dá pra listar, buscar por ID, buscar por nome, cadastrar, editar e excluir.
-- As regras continuam as mesmas: o nome é obrigatório, tem que ter de 3 a 100 caracteres e não pode repetir. "Maria Souza" e "maria souza" contam como o mesmo nome, e a busca acha "João" mesmo se você digitar "joao".
-- Relação com as notas: o `disciplinasComMedia()` junta `notas` e `disciplinas` com `JOIN`, calcula a média no próprio banco com `AVG` e devolve a situação (Aprovado/Reprovado). É isso que aparece na tela de detalhe do aluno.
-- Não dá pra excluir aluno que já tem nota: o controller avisa antes, e se mesmo assim chegar no banco, a chave estrangeira `fk_notas_aluno` (`ON DELETE RESTRICT`) barra.
-- API `/api/alunos`: `GET` (todos, `?id=` ou `?q=`), `POST`, `PUT ?id=` e `DELETE ?id=`.
-
-
-### Testes
-
-Os testes de lógica e do controller usam SQLite em memória e não alteram o banco do XAMPP:
+Execute na raiz do projeto:
 
 ```powershell
 composer test
-
-# Alternativa sem o comando Composer disponível no PATH:
-C:\xampp\php\php.exe tests\NotaModelTest.php
-C:\xampp\php\php.exe tests\NotaControllerTest.php
-C:\xampp\php\php.exe tests\DisciplinaModelTest.php
-C:\xampp\php\php.exe tests\AlunoModelTest.php
 ```
 
-Para o teste de integração, importe primeiro o schema em um banco de teste ou desenvolvimento, configure a conexão e confirme explicitamente a execução:
+O comando executa os cinco scripts de teste com SQLite em memória:
 
 ```powershell
-$env:RUN_DB_TESTS='1'
-$env:DB_NAME='sistema_academico'
-C:\xampp\php\php.exe tests\NotaMysqlTest.php
+php tests/NotaModelTest.php
+php tests/NotaControllerTest.php
+php tests/DisciplinaModelTest.php
+php tests/AlunoModelTest.php
+php tests/AvaliacaoIvTest.php
+```
+
+Teste opcional de integração com MySQL (use um banco preparado para testes):
+
+```powershell
+$env:RUN_DB_TESTS = '1'
+php tests/NotaMysqlTest.php
 Remove-Item Env:RUN_DB_TESTS
 ```
 
-O teste MySQL abre uma transação, cria dados fictícios, verifica CRUD, média, situação, validações e chave estrangeira, e executa rollback ao final.
+O teste de integração utiliza a conexão configurada e faz rollback ao final. Não execute em um banco com dados importantes sem conferir a configuração.
+
+**Checklist manual:** login/logout; bloqueio de alterações para usuário comum; CRUD de alunos, disciplinas e notas; buscas com acentos; detalhes e médias; filtros do relatório; download CSV; e página amigável em falhas de conexão. A entrega inclui demonstração de **3 a 5 minutos em vídeo ou apresentação em sala**.
 
 ## Registro de contribuições
 
 ### Thiago Henrique Piovan Costa
 
-- commit: 022ecb2 - Configuração da base compartilhada do projeto seguindo a Aula 8: autoload do Composer, inicialização das sessões de alunos, disciplinas e notas, roteamento inicial no index.php, layout responsivo com Bootstrap, página inicial, tratamento de rota inexistente e documentação no README.
-
-- commit: ab8e7f7 - Implementação do Model Nota com cadastro, atualização, exclusão, validações, geração automática de IDs, consultas por aluno e disciplina, cálculo de média e situação.
-
-- commit: c9260fd - Implementação do NotaController e das rotas web para listagem, cadastro, edição, salvamento e exclusão de notas.
-
-- commit: fe4e026 - Criação das telas de listagem, cadastro e edição de notas com Bootstrap, aviso quando não existem alunos ou disciplinas e exibição de mensagens da sessão.
-
-- commit: a542d0f - Implementação da API JSON de notas com as rotas GET, POST e DELETE, incluindo respostas de sucesso, validação, registro não encontrado e códigos HTTP adequados.
+- `022ecb2`: base compartilhada do projeto (Composer, sessões, rotas, layout, início e README).
+- `ab8e7f7`: Model Nota com CRUD, validações e cálculos.
+- `c9260fd`: NotaController e rotas web de notas.
+- `fe4e026`: views de listagem, cadastro e edição de notas.
+- `a542d0f`: API JSON de notas (GET, POST e DELETE).
+- `99ac097`: integração do módulo de Notas com MySQL/PDO à staging.
+- `f6d3842`: relatório acadêmico e exportação CSV.
+- `bdfab78`: buscas SQL parametrizadas.
+- `3fb99b9`: GET individual, PUT e testes da API de notas.
+- `ac57ec3`: integração da parte de relatórios/API na staging.
 
 ### Diogo Berçocano
 
-Registrar uma linha depois de cada commit realizado:
+- `95136d76`: Model e Controller de Disciplina, validações, views, relação com notas, API e rotas.
+- `5a139f7`: migração do módulo Disciplinas para MySQL/PDO, JOIN/AVG, PUT e testes.
+- `9419dff`: `config.php`, scripts SQL (`schema` e `seed`), exceções e tratamentos de chaves estrangeiras.
 
-- commit: 95136d76c19d030b7acde388aaebd27d090d54b9 - Disciplinas: Model com validação (nome de 3 a 100 caracteres e sem repetição, média mínima entre 0 e 10), busca por nome sem diferenciar maiúsculas e acentos, DisciplinaController com telas (lista com busca, criar, editar e detalhe com alunos e médias vindos das notas) e API em JSON (`/api/disciplinas`: consultar, inserir e excluir), views em Bootstrap com mensagens de sucesso e erro, bloqueio de exclusão de disciplina que já tem notas e rotas de disciplinas no index.php.
+### Guilherme Henrique Canducci
 
-- commit: 5a139f7 - Persistência com MySQL e PDO: migração do Model Disciplina de `$_SESSION` para MySQL/PDO usando a conexão compartilhada `Database`, consulta com `JOIN` e `AVG` para alunos e médias da disciplina, rota `PUT /api/disciplinas` para completar o CRUD na API, remoção da sessão de disciplinas do `index.php` e testes em `tests/DisciplinaModelTest.php`.
-
-### Guilherme Canducci
-
-Commits em MVC-Alunos.
-
-- 2e89b8d commit: Model com validação e busca por nome.
-  Implementação do Model Aluno, responsável por ler e gravar os alunos na sessão: listagem, consulta por ID, busca por nome sem diferenciar maiúsculas e acentos, cadastro com geração automática de IDs, atualização e exclusão. Inclui validação do nome (obrigatório, de 3 a 100 caracteres e sem repetição).
-
-- 8759cac commit: Implementação do AlunoController e das rotas web de alunos no index.php.
-  Listagem com busca por nome, formulários de cadastro e edição, salvamento com retorno das mensagens de validação e exclusão bloqueada quando o aluno já tem notas lançadas.
-
-- 4ccd21e commit: Criação das telas de alunos com Bootstrap.
-  Listagem com busca por nome e ações de editar e excluir, formulário único reaproveitado no cadastro e na edição, aviso de lista vazia e exibição das mensagens de sucesso e erro da sessão.
-
-- b8058d4 commit: Criação da tela de detalhe do aluno, com rota e método no AlunoController.
-  Exibe as notas do aluno agrupadas por disciplina, com média, média mínima e situação de aprovação, integrando os Models de Nota e Disciplina. Inclusão do botão "Ver" na listagem de alunos.
-
-- 9b516ba commit: Implementação da API JSON de alunos na rota /api/alunos.
-  Consulta (todos, por ID ou por nome), inserção e exclusão, com respostas de sucesso, erro de validação, registro não encontrado, bloqueio de exclusão de aluno com notas e códigos HTTP adequados.
-
-- 256ea62 commit: Persistência com MySQL e PDO: migração do Model Aluno da sessão para MySQL/PDO.
-  O Model passou a usar a conexão compartilhada `Database`, com consulta `JOIN` + `AVG` para mostrar as disciplinas, notas e médias do aluno na tela de detalhe. Também entrou a rota `PUT /api/alunos` pra fechar o CRUD na API, saiu a sessão de alunos do `index.php` e foram criados os testes em `tests/AlunoModelTest.php`.
+- `2e89b8d`: Model Aluno e validação por nome.
+- `8759cac`: AlunoController e rotas web.
+- `4ccd21e`: views de Alunos em Bootstrap.
+- `b8058d4`: tela de detalhe do aluno com médias.
+- `9b516ba`: API JSON de Alunos.
+- `256ea62`: migração do módulo Alunos para MySQL/PDO, JOIN/AVG, PUT e testes.
+- `3b4760e`: autenticação, logout, rotas protegidas e perfis admin/usuário.
