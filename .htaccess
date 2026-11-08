@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteBase /mvc-php/
+
+# envia tudo pro index.php, exceto arquivos reais
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA,L]
